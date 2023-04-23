@@ -1,2 +1,2 @@
 # JARVIS
-A voice assistant wrapper service using OpenAI's GPT-3 model.
+A self hosted AI voice assistant using a Node.JS API to llama-rs
