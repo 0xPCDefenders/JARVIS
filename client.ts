@@ -5,7 +5,7 @@ recognition.interimResults = true;
 recognition.lang = "en-US";
 
 //records the speech to text data
-recognition.onresult = function(event) {
+recognition.onresult = async function(event) {
     let interimTranscript = '';
 
     let finalTranscript = '';
@@ -13,20 +13,18 @@ recognition.onresult = function(event) {
         if (event.results[i].isFinal) {
             //capture the text from the recording in a final snapshot
             finalTranscript += event.results[i][0].transcript;
+            let responseOutput = await requestHandler(finalTranscript).toString();
+            console.log("Response: ", responseOutput);
         } else {
             interimTranscript += event.results[i][0].transcript;
         }
     }
-
-    //send the text from the recording to the server
-    let responseOutput = requestHandler(finalTranscript);
-    console.log(responseOutput);
 }
+
 recognition.start();
 
-
 //send the text from the recording to the server
-function requestHandler(info: string): string | void {
+async function requestHandler(info: string): Promise<string | void> {
 
     const queryParams = new URLSearchParams({
         info: info
@@ -42,7 +40,6 @@ function requestHandler(info: string): string | void {
         .catch(error => {
             console.error(error);
         });
-
 }
 
 
