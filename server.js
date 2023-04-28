@@ -38,6 +38,25 @@ var _this = this;
 // Create an instance of the Express application
 var express = require('express');
 require("dotenv").config();
+// inference.ts
+function moduleLoader() {
+    return __awaiter(this, void 0, void 0, function () {
+        var LLM, LLamaRS;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, Promise.resolve().then(function () { return import("llama-node"); })];
+                case 1:
+                    LLM = (_a.sent()).LLM;
+                    return [4 /*yield*/, Promise.resolve().then(function () { return import("llama-node/dist/llm/llama-rs.js"); })];
+                case 2:
+                    LLamaRS = (_a.sent()).LLamaRS;
+                    return [2 /*return*/, new LLM(LLamaRS)];
+            }
+        });
+    });
+}
+var path = require("path");
+//const runInference = require("inference.js");
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
@@ -70,8 +89,60 @@ app.listen(3000, function () {
 //llama-rs inference will be computed here
 function connectLlama(info) {
     return __awaiter(this, void 0, void 0, function () {
+        var completionToken, error_1;
         return __generator(this, function (_a) {
-            return [2 /*return*/, info];
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, runInference(info)];
+                case 1:
+                    completionToken = _a.sent();
+                    return [2 /*return*/, completionToken];
+                case 2:
+                    error_1 = _a.sent();
+                    console.error(error_1);
+                    throw new Error('Failed to generate completion');
+                case 3: return [2 /*return*/];
+            }
         });
     });
 }
+function runInference(_template) {
+    return __awaiter(this, void 0, void 0, function () {
+        var model, llama, template, prompt_1, error_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    model = path.resolve(process.cwd(), "model/ggml-model-q4_0.bin");
+                    return [4 /*yield*/, moduleLoader()];
+                case 1:
+                    llama = _a.sent();
+                    llama.load({ path: model });
+                    template = _template;
+                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n    \n    ### Instruction:\n    \n    ".concat(template, "\n    \n    ### Response:");
+                    llama.createCompletion({
+                        prompt: prompt_1,
+                        numPredict: 128,
+                        temp: 0.2,
+                        topP: 1,
+                        topK: 40,
+                        repeatPenalty: 1,
+                        repeatLastN: 64,
+                        seed: 0,
+                        feedPrompt: true,
+                    }, function (response) {
+                        process.stdout.write(response.token);
+                        return new Promise(function (resolve) { return resolve(response.token); });
+                    });
+                    return [3 /*break*/, 3];
+                case 2:
+                    error_2 = _a.sent();
+                    console.error(error_2);
+                    return [2 /*return*/, new Promise(function (reject) { return reject("Failed to generate completion"); })];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
+;
