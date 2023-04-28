@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,18 +34,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+var _this = this;
 // Create an instance of the Express application
 var express = require('express');
 require("dotenv").config();
 // inference.ts
-
-async function moduleLoader() {
-const { LLM } = await import("llama-node");
-const { LLamaRS } = await import("llama-node/dist/llm/llama-rs.js");
-return new LLM(LLamaRS);
+function moduleLoader() {
+    return __awaiter(this, void 0, void 0, function () {
+        var LLM, LLamaRS;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, Promise.resolve().then(function () { return import("llama-node"); })];
+                case 1:
+                    LLM = (_a.sent()).LLM;
+                    return [4 /*yield*/, Promise.resolve().then(function () { return import("llama-node/dist/llm/llama-rs.js"); })];
+                case 2:
+                    LLamaRS = (_a.sent()).LLamaRS;
+                    return [2 /*return*/, new LLM(LLamaRS)];
+            }
+        });
+    });
 }
-
 var path = require("path");
 //const runInference = require("inference.js");
 var cors = require('cors');
@@ -58,7 +66,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // Define an endpoint to handle incoming GET requests
 // @ts-ignore
-app.get('/answer', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+app.get('/answer', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
     var info, responseOutput;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -99,32 +107,42 @@ function connectLlama(info) {
         });
     });
 }
-async function runInference(_template) {
-    try {
-        var model = path.resolve(process.cwd(), "model/ggml-model-q4_0.bin");
-        
-        const llama = await moduleLoader();
-        llama.load({ path: model });
-        var template = _template;
-        var prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n    \n    ### Instruction:\n    \n    ".concat(template, "\n    \n    ### Response:");
-        llama.createCompletion({
-            prompt: prompt_1,
-            numPredict: 128,
-            temp: 0.2,
-            topP: 1,
-            topK: 40,
-            repeatPenalty: 1,
-            repeatLastN: 64,
-            seed: 0,
-            feedPrompt: true,
-        }, function (response) {
-            process.stdout.write(response.token);
-            return new Promise(function (resolve) { return resolve(response.token); });
+function runInference(_template) {
+    return __awaiter(this, void 0, void 0, function () {
+        var model, llama, template, prompt_1, error_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    model = path.resolve(process.cwd(), "model/ggml-model-q4_0.bin");
+                    return [4 /*yield*/, moduleLoader()];
+                case 1:
+                    llama = _a.sent();
+                    llama.load({ path: model });
+                    template = _template;
+                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n    \n    ### Instruction:\n    \n    ".concat(template, "\n    \n    ### Response:");
+                    llama.createCompletion({
+                        prompt: prompt_1,
+                        numPredict: 128,
+                        temp: 0.2,
+                        topP: 1,
+                        topK: 40,
+                        repeatPenalty: 1,
+                        repeatLastN: 64,
+                        seed: 0,
+                        feedPrompt: true,
+                    }, function (response) {
+                        process.stdout.write(response.token);
+                        return new Promise(function (resolve) { return resolve(response.token); });
+                    });
+                    return [3 /*break*/, 3];
+                case 2:
+                    error_2 = _a.sent();
+                    console.error(error_2);
+                    return [2 /*return*/, new Promise(function (reject) { return reject("Failed to generate completion"); })];
+                case 3: return [2 /*return*/];
+            }
         });
-    }
-    catch (error) {
-        console.error(error);
-        return new Promise(function (reject) { return reject("Failed to generate completion"); });
-    }
+    });
 }
 ;
