@@ -1,11 +1,19 @@
 // Create an instance of the Express application
 const express = require('express');
 require("dotenv").config();
-// inference.ts
-import {LLM} from "llama-node";
-import {LLamaRS} from "llama-node/dist/llm/llama-rs.js";
+
+/**
+ * Loads the Llama module from the npm package.
+ * **Make sure that these dependencies are installed with the
+ * import keyword and not require in server.js when this file is transpiled.**
+*/
+async function moduleLoader() {
+    const { LLM } = await import("llama-node");
+    const { LLamaRS } = await import("llama-node/dist/llm/llama-rs.js");
+    return new LLM(LLamaRS);
+}
+
 const path = require("path");
-//const runInference = require("inference.js");
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
@@ -27,12 +35,12 @@ app.get('/answer', async (req, res) => {
 
 });
 
-// Start the server and listen for incoming requests
+//Start the server and listen for incoming requests
 app.listen(3000, () => {
     console.log('Server is listening on port 3000');
 });
 
-//llama-rs inference will be computed here
+//Connection to llama backend
 async function connectLlama(info: string) : Promise<string | undefined> {
     
     try {
@@ -44,11 +52,12 @@ async function connectLlama(info: string) : Promise<string | undefined> {
       }
 }
 
-function runInference(_template: string): Promise<string> | undefined {
+//llama-rs inference will be computed here
+async function runInference(_template: string): Promise<string | undefined> {
 
     try {
     const model = path.resolve(process.cwd(), "model/ggml-model-q4_0.bin");
-    const llama = new LLM(LLamaRS);
+    const llama = await moduleLoader();
     llama.load({ path: model });
     const template = _template;
     const prompt = `Below is an instruction that describes a task. Write a response that appropriately completes the request.
