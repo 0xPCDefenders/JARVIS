@@ -42,31 +42,41 @@ recognition.lang = "en-US";
 //records the speech to text data
 recognition.onresult = function (event) {
     return __awaiter(this, void 0, void 0, function () {
-        var interimTranscript, finalTranscript, i, responseOutput;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var interimTranscript, finalTranscript, i, response, response_1, _a, _b, error_1;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     interimTranscript = '';
                     finalTranscript = '';
                     i = event.resultIndex;
-                    _a.label = 1;
+                    _c.label = 1;
                 case 1:
-                    if (!(i < event.results.length)) return [3 /*break*/, 5];
-                    if (!event.results[i].isFinal) return [3 /*break*/, 3];
-                    //capture the text from the recording in a final snapshot
+                    if (!(i < event.results.length)) return [3 /*break*/, 8];
+                    if (!event.results[i].isFinal) return [3 /*break*/, 6];
+                    //capture the text from the recording in a final snapshot and display it.
                     finalTranscript += event.results[i][0].transcript;
-                    return [4 /*yield*/, requestHandler(finalTranscript).toString()];
+                    response = new Promise(function (resolve, reject) { });
+                    _c.label = 2;
                 case 2:
-                    responseOutput = _a.sent();
-                    console.log("Response: ", responseOutput);
-                    return [3 /*break*/, 4];
+                    _c.trys.push([2, 4, , 5]);
+                    response_1 = requestHandler(finalTranscript);
+                    _b = (_a = console).log;
+                    return [4 /*yield*/, response_1];
                 case 3:
-                    interimTranscript += event.results[i][0].transcript;
-                    _a.label = 4;
+                    _b.apply(_a, [_c.sent()]);
+                    return [3 /*break*/, 5];
                 case 4:
+                    error_1 = _c.sent();
+                    console.error("Browser: ", error_1);
+                    return [3 /*break*/, 5];
+                case 5: return [3 /*break*/, 7];
+                case 6:
+                    interimTranscript += event.results[i][0].transcript;
+                    _c.label = 7;
+                case 7:
                     ++i;
                     return [3 /*break*/, 1];
-                case 5: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });
@@ -75,21 +85,31 @@ recognition.start();
 //send the text from the recording to the server
 function requestHandler(info) {
     return __awaiter(this, void 0, void 0, function () {
-        var queryParams;
+        var queryParams, url, response, data, error_2;
         return __generator(this, function (_a) {
-            queryParams = new URLSearchParams({
-                info: info
-            });
-            fetch('http://localhost:3000/answer?' + queryParams.toString(), { method: 'GET' })
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                console.log(data.message);
-                return data.message;
-            })
-                .catch(function (error) {
-                console.error(error);
-            });
-            return [2 /*return*/];
+            switch (_a.label) {
+                case 0:
+                    queryParams = new URLSearchParams({
+                        info: info
+                    });
+                    url = 'http://localhost:3000/answer?' + queryParams.toString();
+                    return [4 /*yield*/, fetch(url, { method: 'GET' })];
+                case 1:
+                    response = _a.sent();
+                    _a.label = 2;
+                case 2:
+                    _a.trys.push([2, 4, , 5]);
+                    return [4 /*yield*/, response.json()];
+                case 3:
+                    data = _a.sent();
+                    return [2 /*return*/, data.message];
+                case 4:
+                    error_2 = _a.sent();
+                    console.error("Browser: Error parsing response as JSON", error_2);
+                    return [2 /*return*/, error_2.message];
+                case 5: return [2 /*return*/];
+            }
         });
     });
 }
+;
