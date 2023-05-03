@@ -1,4 +1,8 @@
+import { LLama, LLamaInferenceArguments } from "@llama-node/core";
 import { response } from "express";
+import { LLM } from "llama-node";
+import { LLamaRS } from "llama-node/dist/llm/llama-rs.js";
+import { resolve } from "path";
 
 // Create an instance of the Express application
 const express = require('express');
@@ -36,9 +40,11 @@ app.get('/answer', async (req, res) => {
     console.log('Received data:', info)
 
     try {
-    let responseOutput: string | undefined = await runInference(info);
-    res.send({message: responseOutput});
+    
+    let tokenOutput: string | undefined = await runInference(info);
+    res.send({message: tokenOutput});
     console.log('Sent data!');
+  
     } catch (error) {
         console.error(error);
         res.send({message: error});
@@ -52,48 +58,57 @@ app.listen(3000, () => {
 
 //llama-rs inference will be computed here
 export async function runInference(_template: string): Promise<string | undefined> {
-    try {
-      const model = path.resolve(process.cwd(), "../model/ggml-model-q4_0.bin");
-      const llama = await moduleLoader();
-      llama.load({ path: model });
-      const template = _template;
-      const prompt = `Below is an instruction that describes a task. Write a response that appropriately completes the request.
-  
-      ### Instruction:
-  
-      ${template}
-  
-      ### Response:`;
-  
-      const responseToken = await new Promise<string>((resolve, reject) => {
-        llama.createCompletion(
-          {
-            prompt,
-            numPredict: 128,
-            temp: 0.2,
-            topP: 1,
-            topK: 40,
-            repeatPenalty: 1,
-            repeatLastN: 64,
-            seed: 0,
-            feedPrompt: true,
-          },
-          (response: any) => {
-            resolve(response.token);
+  try {
+    const model = path.resolve(process.cwd(), "../model/ggml-model-q4_0.bin");
+    const llama = await moduleLoader();
+    llama.load({ path: model });
+    const template = _template;
+    const prompt = `Below is an instruction that describes a task. Write a response that appropriately completes the request, in full and complete sentences.
+
+    ### Instruction:
+
+    ${template}
+
+    ### Response:`;
+
+    let tokenCollector: string[] = [];
+
+    const responseToken = new Promise<string>(async (resolve, reject) => {
+      llama.createCompletion(
+        {
+          prompt,
+          numPredict: 128,
+          temp: 0.2,
+          topP: 1,
+          topK: 40,
+          repeatPenalty: 1,
+          repeatLastN: 64,
+          seed: 0,
+          feedPrompt: true,
+        },
+        async (response: any) => {
+          console.log("Response token: ", response.token);
+          console.log("Response: ", response);
+          tokenCollector.push(response.token);
+          if (response.completed === true) {
+            let resolvedToken = tokenCollector.toString();
+            resolvedToken = resolvedToken.split("<end>").join("");
+            resolve(tokenCollector.toString());
           }
-        );
-      });
-  
-      console.log("received message:", responseToken);
-      console.log("waiting...");
-      setTimeout(() => {
-        console.log("done waiting");
-      }, 1000);
-  
-      return responseToken;
-    } catch (error) {
-      console.error(error);
-      return new Promise((reject) => reject("Failed to generate completion"));
+          
+        }
+      );
+
     }
+    );
+    
+    const tokens = await responseToken;
+    console.log("Token collector: ", tokens);
+    return(tokens.toString());
+  } catch (error) {
+    console.error(error);
+    return new Promise((reject) => reject("Failed to generate completion"));
   }
+}
+
   

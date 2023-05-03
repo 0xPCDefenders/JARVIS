@@ -4,6 +4,11 @@ recognition.continuous = true;
 recognition.interimResults = true;
 recognition.lang = "en-US";
 
+//create an object that translates text to speech data
+const utterance = new SpeechSynthesisUtterance();
+utterance.voice = speechSynthesis.getVoices()[0];
+
+
 //records the speech to text data
 recognition.onresult = async function(event) {
     let interimTranscript: string = '';
@@ -11,20 +16,27 @@ recognition.onresult = async function(event) {
     for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
 
+            
             //capture the text from the recording in a final snapshot and display it.
             finalTranscript += event.results[i][0].transcript;
 
-            let response: Promise<string> = new Promise<string>(function(resolve, reject) { });
             try {
+               recognition.stop();
                let response: Promise<string> = requestHandler(finalTranscript);
-
-               console.log(await response);
-                // manipulate HTML based on response
+               let responseText: string = await response;
+               console.log(responseText);
+               utterance.text = responseText;
+               speechSynthesis.speak(utterance);
+               setTimeout(() => {
+                   recognition.start();
+               }, 4500);
             } catch (error) {
                 console.error("Browser: ", error);
+                recognition.start();
             }
         } else {
             interimTranscript += event.results[i][0].transcript;
+
         }
     }};
 

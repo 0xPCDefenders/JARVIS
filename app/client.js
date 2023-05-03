@@ -39,40 +39,49 @@ var recognition = new webkitSpeechRecognition();
 recognition.continuous = true;
 recognition.interimResults = true;
 recognition.lang = "en-US";
+//create an object that translates text to speech data
+var utterance = new SpeechSynthesisUtterance();
+utterance.voice = speechSynthesis.getVoices()[0];
 //records the speech to text data
 recognition.onresult = function (event) {
     return __awaiter(this, void 0, void 0, function () {
-        var interimTranscript, finalTranscript, i, response, response_1, _a, _b, error_1;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var interimTranscript, finalTranscript, i, response, responseText, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     interimTranscript = '';
                     finalTranscript = '';
                     i = event.resultIndex;
-                    _c.label = 1;
+                    _a.label = 1;
                 case 1:
                     if (!(i < event.results.length)) return [3 /*break*/, 8];
                     if (!event.results[i].isFinal) return [3 /*break*/, 6];
                     //capture the text from the recording in a final snapshot and display it.
                     finalTranscript += event.results[i][0].transcript;
-                    response = new Promise(function (resolve, reject) { });
-                    _c.label = 2;
+                    _a.label = 2;
                 case 2:
-                    _c.trys.push([2, 4, , 5]);
-                    response_1 = requestHandler(finalTranscript);
-                    _b = (_a = console).log;
-                    return [4 /*yield*/, response_1];
+                    _a.trys.push([2, 4, , 5]);
+                    recognition.stop();
+                    response = requestHandler(finalTranscript);
+                    return [4 /*yield*/, response];
                 case 3:
-                    _b.apply(_a, [_c.sent()]);
+                    responseText = _a.sent();
+                    console.log(responseText);
+                    utterance.text = responseText;
+                    speechSynthesis.speak(utterance);
+                    setTimeout(function () {
+                        recognition.start();
+                    }, 4500);
                     return [3 /*break*/, 5];
                 case 4:
-                    error_1 = _c.sent();
+                    error_1 = _a.sent();
                     console.error("Browser: ", error_1);
+                    recognition.start();
                     return [3 /*break*/, 5];
                 case 5: return [3 /*break*/, 7];
                 case 6:
                     interimTranscript += event.results[i][0].transcript;
-                    _c.label = 7;
+                    _a.label = 7;
                 case 7:
                     ++i;
                     return [3 /*break*/, 1];

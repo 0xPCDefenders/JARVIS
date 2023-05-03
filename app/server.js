@@ -72,7 +72,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Define an endpoint to handle incoming GET requests
 // @ts-ignore
 app.get('/answer', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var info, responseOutput, error_1;
+    var info, tokenOutput, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -83,8 +83,8 @@ app.get('/answer', function (req, res) { return __awaiter(void 0, void 0, void 0
                 _a.trys.push([1, 3, , 4]);
                 return [4 /*yield*/, runInference(info)];
             case 2:
-                responseOutput = _a.sent();
-                res.send({ message: responseOutput });
+                tokenOutput = _a.sent();
+                res.send({ message: tokenOutput });
                 console.log('Sent data!');
                 return [3 /*break*/, 4];
             case 3:
@@ -103,7 +103,8 @@ app.listen(3000, function () {
 //llama-rs inference will be computed here
 function runInference(_template) {
     return __awaiter(this, void 0, void 0, function () {
-        var model, llama_1, template, prompt_1, responseToken, error_2;
+        var model, llama_1, template, prompt_1, tokenCollector_1, responseToken, tokens, error_2;
+        var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -114,8 +115,11 @@ function runInference(_template) {
                     llama_1 = _a.sent();
                     llama_1.load({ path: model });
                     template = _template;
-                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n  \n      ### Instruction:\n  \n      ".concat(template, "\n  \n      ### Response:");
-                    return [4 /*yield*/, new Promise(function (resolve, reject) {
+                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request, in full and complete sentences.\n\n    ### Instruction:\n\n    ".concat(template, "\n\n    ### Response:");
+                    tokenCollector_1 = [];
+                    responseToken = new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var _this = this;
+                        return __generator(this, function (_a) {
                             llama_1.createCompletion({
                                 prompt: prompt_1,
                                 numPredict: 128,
@@ -126,18 +130,28 @@ function runInference(_template) {
                                 repeatLastN: 64,
                                 seed: 0,
                                 feedPrompt: true,
-                            }, function (response) {
-                                resolve(response.token);
-                            });
-                        })];
+                            }, function (response) { return __awaiter(_this, void 0, void 0, function () {
+                                var resolvedToken;
+                                return __generator(this, function (_a) {
+                                    console.log("Response token: ", response.token);
+                                    console.log("Response: ", response);
+                                    tokenCollector_1.push(response.token);
+                                    if (response.completed === true) {
+                                        resolvedToken = tokenCollector_1.toString();
+                                        resolvedToken = resolvedToken.split("<end>").join("");
+                                        resolve(tokenCollector_1.toString());
+                                    }
+                                    return [2 /*return*/];
+                                });
+                            }); });
+                            return [2 /*return*/];
+                        });
+                    }); });
+                    return [4 /*yield*/, responseToken];
                 case 2:
-                    responseToken = _a.sent();
-                    console.log("received message:", responseToken);
-                    console.log("waiting...");
-                    setTimeout(function () {
-                        console.log("done waiting");
-                    }, 1000);
-                    return [2 /*return*/, responseToken];
+                    tokens = _a.sent();
+                    console.log("Token collector: ", tokens);
+                    return [2 /*return*/, (tokens.toString())];
                 case 3:
                     error_2 = _a.sent();
                     console.error(error_2);
