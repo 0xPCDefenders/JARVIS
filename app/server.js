@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,11 +35,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.runInference = void 0;
 // Create an instance of the Express application
 var express = require('express');
 require("dotenv").config();
-// inference.ts
+/**
+ * Loads the Llama module from the npm package.
+ * **Make sure that these dependencies are installed with the
+ * import keyword and not require in server.js when this file is transpiled.**
+*/
 function moduleLoader() {
     return __awaiter(this, void 0, void 0, function () {
         var LLM, LLamaRS;
@@ -56,7 +62,6 @@ function moduleLoader() {
     });
 }
 var path = require("path");
-//const runInference = require("inference.js");
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
@@ -66,83 +71,94 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // Define an endpoint to handle incoming GET requests
 // @ts-ignore
-app.get('/answer', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-    var info, responseOutput;
+app.get('/answer', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var info, tokenOutput, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 info = req.query.info;
-                console.log('Received data:', info.length);
-                return [4 /*yield*/, connectLlama(info)];
+                console.log('Received data:', info);
+                _a.label = 1;
             case 1:
-                responseOutput = _a.sent();
-                res.send({ message: responseOutput });
-                console.log("Response: ", responseOutput);
-                return [2 /*return*/];
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, runInference(info)];
+            case 2:
+                tokenOutput = _a.sent();
+                res.send({ message: tokenOutput });
+                console.log('Sent data!');
+                return [3 /*break*/, 4];
+            case 3:
+                error_1 = _a.sent();
+                console.error(error_1);
+                res.send({ message: error_1 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); });
-// Start the server and listen for incoming requests
+//Start the server and listen for incoming requests
 app.listen(3000, function () {
     console.log('Server is listening on port 3000');
 });
 //llama-rs inference will be computed here
-function connectLlama(info) {
-    return __awaiter(this, void 0, void 0, function () {
-        var completionToken, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, runInference(info)];
-                case 1:
-                    completionToken = _a.sent();
-                    return [2 /*return*/, completionToken];
-                case 2:
-                    error_1 = _a.sent();
-                    console.error(error_1);
-                    throw new Error('Failed to generate completion');
-                case 3: return [2 /*return*/];
-            }
-        });
-    });
-}
 function runInference(_template) {
     return __awaiter(this, void 0, void 0, function () {
-        var model, llama, template, prompt_1, error_2;
+        var model, llama_1, template, prompt_1, tokenCollector_1, responseToken, tokens, error_2;
+        var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    model = path.resolve(process.cwd(), "model/ggml-model-q4_0.bin");
+                    _a.trys.push([0, 3, , 4]);
+                    model = path.resolve(process.cwd(), "../model/ggml-model-q4_0.bin");
                     return [4 /*yield*/, moduleLoader()];
                 case 1:
-                    llama = _a.sent();
-                    llama.load({ path: model });
+                    llama_1 = _a.sent();
+                    llama_1.load({ path: model });
                     template = _template;
-                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n    \n    ### Instruction:\n    \n    ".concat(template, "\n    \n    ### Response:");
-                    llama.createCompletion({
-                        prompt: prompt_1,
-                        numPredict: 128,
-                        temp: 0.2,
-                        topP: 1,
-                        topK: 40,
-                        repeatPenalty: 1,
-                        repeatLastN: 64,
-                        seed: 0,
-                        feedPrompt: true,
-                    }, function (response) {
-                        process.stdout.write(response.token);
-                        return new Promise(function (resolve) { return resolve(response.token); });
-                    });
-                    return [3 /*break*/, 3];
+                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request, in full and complete sentences.\n\n    ### Instruction:\n\n    ".concat(template, "\n\n    ### Response:");
+                    tokenCollector_1 = [];
+                    responseToken = new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            llama_1.createCompletion({
+                                prompt: prompt_1,
+                                numPredict: 128,
+                                temp: 0.2,
+                                topP: 1,
+                                topK: 40,
+                                repeatPenalty: 1,
+                                repeatLastN: 64,
+                                seed: 0,
+                                feedPrompt: true,
+                            }, function (response) { return __awaiter(_this, void 0, void 0, function () {
+                                var resolvedToken;
+                                return __generator(this, function (_a) {
+                                    console.log("Response token: ", response.token);
+                                    console.log("Response: ", response);
+                                    tokenCollector_1.push(response.token);
+                                    if (response.completed === true) {
+                                        resolvedToken = tokenCollector_1.toString();
+                                        resolvedToken = resolvedToken.split("<end>").join("");
+                                        resolve(tokenCollector_1.toString());
+                                    }
+                                    return [2 /*return*/];
+                                });
+                            }); });
+                            return [2 /*return*/];
+                        });
+                    }); });
+                    return [4 /*yield*/, responseToken];
                 case 2:
+                    tokens = _a.sent();
+                    console.log("Token collector: ", tokens);
+                    return [2 /*return*/, (tokens.toString())];
+                case 3:
                     error_2 = _a.sent();
                     console.error(error_2);
                     return [2 /*return*/, new Promise(function (reject) { return reject("Failed to generate completion"); })];
-                case 3: return [2 /*return*/];
+                case 4: return [2 /*return*/];
             }
         });
     });
 }
-;
+exports.runInference = runInference;

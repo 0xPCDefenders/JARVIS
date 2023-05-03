@@ -39,10 +39,13 @@ var recognition = new webkitSpeechRecognition();
 recognition.continuous = true;
 recognition.interimResults = true;
 recognition.lang = "en-US";
+//create an object that translates text to speech data
+var utterance = new SpeechSynthesisUtterance();
+utterance.voice = speechSynthesis.getVoices()[0];
 //records the speech to text data
 recognition.onresult = function (event) {
     return __awaiter(this, void 0, void 0, function () {
-        var interimTranscript, finalTranscript, i, responseOutput;
+        var interimTranscript, finalTranscript, i, response, responseText, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -51,22 +54,38 @@ recognition.onresult = function (event) {
                     i = event.resultIndex;
                     _a.label = 1;
                 case 1:
-                    if (!(i < event.results.length)) return [3 /*break*/, 5];
-                    if (!event.results[i].isFinal) return [3 /*break*/, 3];
-                    //capture the text from the recording in a final snapshot
+                    if (!(i < event.results.length)) return [3 /*break*/, 8];
+                    if (!event.results[i].isFinal) return [3 /*break*/, 6];
+                    //capture the text from the recording in a final snapshot and display it.
                     finalTranscript += event.results[i][0].transcript;
-                    return [4 /*yield*/, requestHandler(finalTranscript).toString()];
+                    _a.label = 2;
                 case 2:
-                    responseOutput = _a.sent();
-                    console.log("Response: ", responseOutput);
-                    return [3 /*break*/, 4];
+                    _a.trys.push([2, 4, , 5]);
+                    recognition.stop();
+                    response = requestHandler(finalTranscript);
+                    return [4 /*yield*/, response];
                 case 3:
-                    interimTranscript += event.results[i][0].transcript;
-                    _a.label = 4;
+                    responseText = _a.sent();
+                    console.log(responseText);
+                    utterance.text = responseText;
+                    speechSynthesis.speak(utterance);
+                    setTimeout(function () {
+                        recognition.start();
+                    }, 4500);
+                    return [3 /*break*/, 5];
                 case 4:
+                    error_1 = _a.sent();
+                    console.error("Browser: ", error_1);
+                    recognition.start();
+                    return [3 /*break*/, 5];
+                case 5: return [3 /*break*/, 7];
+                case 6:
+                    interimTranscript += event.results[i][0].transcript;
+                    _a.label = 7;
+                case 7:
                     ++i;
                     return [3 /*break*/, 1];
-                case 5: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });
@@ -75,21 +94,31 @@ recognition.start();
 //send the text from the recording to the server
 function requestHandler(info) {
     return __awaiter(this, void 0, void 0, function () {
-        var queryParams;
+        var queryParams, url, response, data, error_2;
         return __generator(this, function (_a) {
-            queryParams = new URLSearchParams({
-                info: info
-            });
-            fetch('http://localhost:3000/answer?' + queryParams.toString(), { method: 'GET' })
-                .then(function (response) { return response.json(); })
-                .then(function (data) {
-                console.log(data.message);
-                return data.message;
-            })
-                .catch(function (error) {
-                console.error(error);
-            });
-            return [2 /*return*/];
+            switch (_a.label) {
+                case 0:
+                    queryParams = new URLSearchParams({
+                        info: info
+                    });
+                    url = 'http://localhost:3000/answer?' + queryParams.toString();
+                    return [4 /*yield*/, fetch(url, { method: 'GET' })];
+                case 1:
+                    response = _a.sent();
+                    _a.label = 2;
+                case 2:
+                    _a.trys.push([2, 4, , 5]);
+                    return [4 /*yield*/, response.json()];
+                case 3:
+                    data = _a.sent();
+                    return [2 /*return*/, data.message];
+                case 4:
+                    error_2 = _a.sent();
+                    console.error("Browser: Error parsing response as JSON", error_2);
+                    return [2 /*return*/, error_2.message];
+                case 5: return [2 /*return*/];
+            }
         });
     });
 }
+;
