@@ -1,3 +1,5 @@
+//import { start } from "repl";
+
 //create an object that records speech to text data
 const recognition = new webkitSpeechRecognition();
 recognition.continuous = true;
@@ -6,7 +8,7 @@ recognition.lang = "en-US";
 
 //create an object that translates text to speech data
 const utterance = new SpeechSynthesisUtterance();
-utterance.voice = speechSynthesis.getVoices()[0];
+utterance.voice = speechSynthesis.getVoices()[1];
 
 
 //records the speech to text data
@@ -27,9 +29,9 @@ recognition.onresult = async function(event) {
                console.log(responseText);
                utterance.text = responseText;
                speechSynthesis.speak(utterance);
-               setTimeout(() => {
-                   recognition.start();
-               }, 4500);
+               utterance.onend = function() {
+                     recognition.start();
+               }
             } catch (error) {
                 console.error("Browser: ", error);
                 recognition.start();
@@ -60,3 +62,12 @@ async function requestHandler(info: string): Promise<string> {
             return error.message;
         }
 };
+
+function startRecording(): void {
+    recognition.start();
+}
+
+if (document.getElementById("speechButton") != null) {
+    document.getElementById("speechButton")!.addEventListener("click", startRecording);
+  }
+  

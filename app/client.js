@@ -1,3 +1,4 @@
+//import { start } from "repl";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -41,7 +42,7 @@ recognition.interimResults = true;
 recognition.lang = "en-US";
 //create an object that translates text to speech data
 var utterance = new SpeechSynthesisUtterance();
-utterance.voice = speechSynthesis.getVoices()[0];
+utterance.voice = speechSynthesis.getVoices()[1];
 //records the speech to text data
 recognition.onresult = function (event) {
     return __awaiter(this, void 0, void 0, function () {
@@ -69,9 +70,9 @@ recognition.onresult = function (event) {
                     console.log(responseText);
                     utterance.text = responseText;
                     speechSynthesis.speak(utterance);
-                    setTimeout(function () {
+                    utterance.onend = function () {
                         recognition.start();
-                    }, 4500);
+                    };
                     return [3 /*break*/, 5];
                 case 4:
                     error_1 = _a.sent();
@@ -122,3 +123,9 @@ function requestHandler(info) {
     });
 }
 ;
+function startRecording() {
+    recognition.start();
+}
+if (document.getElementById("speechButton") != null) {
+    document.getElementById("speechButton").addEventListener("click", startRecording);
+}
