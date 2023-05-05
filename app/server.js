@@ -115,7 +115,7 @@ function runInference(_template) {
                     llama_1 = _a.sent();
                     llama_1.load({ path: model });
                     template = _template;
-                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request, in full and complete sentences.\n\n    ### Instruction:\n\n    ".concat(template, "\n\n    ### Response:");
+                    prompt_1 = "Below is an instruction that describes a task. Write a response that appropriately completes the request. \n\n    ### Instruction:\n\n    ".concat(template, "\n\n    ### Response:");
                     tokenCollector_1 = [];
                     responseToken = new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
                         var _this = this;
@@ -138,8 +138,8 @@ function runInference(_template) {
                                     tokenCollector_1.push(response.token);
                                     if (response.completed === true) {
                                         resolvedToken = tokenCollector_1.toString();
-                                        resolvedToken = resolvedToken.split("<end>").join("");
-                                        resolve(tokenCollector_1.toString());
+                                        resolvedToken = resolvedToken.split("<end>").join("").split(",").join("");
+                                        resolve(resolvedToken);
                                     }
                                     return [2 /*return*/];
                                 });
