@@ -46,7 +46,7 @@ utterance.voice = speechSynthesis.getVoices()[1];
 //records the speech to text data
 recognition.onresult = function (event) {
     return __awaiter(this, void 0, void 0, function () {
-        var interimTranscript, finalTranscript, i, response, responseText, error_1;
+        var interimTranscript, finalTranscript, i, speechBox, i_1, response, responseText, responseBox, i_2, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -63,11 +63,23 @@ recognition.onresult = function (event) {
                 case 2:
                     _a.trys.push([2, 4, , 5]);
                     recognition.stop();
+                    speechBox = document.getElementById("speechBox");
+                    speechBox.value = "";
+                    for (i_1 = 0; i_1 < finalTranscript.length; i_1++) {
+                        speechBox.value += finalTranscript[i_1];
+                    }
+                    console.log(speechBox.value);
                     response = requestHandler(finalTranscript);
                     return [4 /*yield*/, response];
                 case 3:
                     responseText = _a.sent();
                     console.log(responseText);
+                    responseBox = document.getElementById("responseBox");
+                    responseBox.value = "";
+                    for (i_2 = 0; i_2 < responseText.length; i_2++) {
+                        responseBox.value += responseText[i_2];
+                    }
+                    console.log(responseBox.value);
                     utterance.text = responseText;
                     speechSynthesis.speak(utterance);
                     utterance.onend = function () {
