@@ -34,7 +34,10 @@
         margin-top: 50px;
       }
       input[type="text"] {
-        width: 300px;
+        width: 770px;
+        height: 150px;
+        margin-top: 70px;
+        margin-bottom: 20%;
         padding: 12px 20px;
         margin: 8px 0;
         box-sizing: border-box;
@@ -52,8 +55,8 @@
         <p id = "status" style="color: white; text-align: center">Waiting... </p>
     </div>
     <div class="textbox-container">
-      <input type="text" placeholder="Your speech goes here!" readonly />
-      <input type="text" placeholder="Jarvis will speak here!" readonly />
+      <input id = "speechBox" type="text" placeholder="Your speech goes here!" value="" readonly />
+      <input id = "responseBox" type="text" placeholder="Jarvis will speak here!" value = "" readonly />
     </div>
     <script src = "/app/client.js"></script>
   </body>

@@ -24,9 +24,21 @@ recognition.onresult = async function(event) {
 
             try {
                recognition.stop();
+               const speechBox = document.getElementById("speechBox") as HTMLInputElement;
+               speechBox.value = "";
+               for (let i = 0; i < finalTranscript.length; i++) {
+                speechBox.value += finalTranscript[i];
+               }
+               console.log(speechBox.value);
                let response: Promise<string> = requestHandler(finalTranscript);
                let responseText: string = await response;
                console.log(responseText);
+               const responseBox =  document.getElementById("responseBox") as HTMLInputElement;
+               responseBox.value = "";
+               for (let i = 0; i < responseText.length; i++) {
+                   responseBox.value += responseText[i];
+               }
+               console.log(responseBox.value);
                utterance.text = responseText;
                speechSynthesis.speak(utterance);
                utterance.onend = function() {

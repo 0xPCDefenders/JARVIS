@@ -1,7 +1,5 @@
 import { LLama, LLamaInferenceArguments } from "@llama-node/core";
 import { response } from "express";
-import { LLM } from "llama-node";
-import { LLamaRS } from "llama-node/dist/llm/llama-rs.js";
 import { resolve } from "path";
 
 // Create an instance of the Express application
