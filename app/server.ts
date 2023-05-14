@@ -61,15 +61,6 @@ export async function runInference(_template: string): Promise<string | undefine
     const llama = await moduleLoader();
     llama.load({ path: model });
     const template = _template;
-    /* const prompt = `Below is an instruction that describes a task. Write a response that appropriately completes the request, in full and complete sentences.
-
-    ### Instruction:
-
-    ${template}
-
-    ### Response:`;
-
-    */
 
     const prompt = `Below is an instruction that describes a task. Write a response that appropriately completes the request. 
 

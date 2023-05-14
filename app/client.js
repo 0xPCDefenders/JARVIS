@@ -1,4 +1,3 @@
-//import { start } from "repl";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -44,9 +43,10 @@ recognition.lang = "en-US";
 var utterance = new SpeechSynthesisUtterance();
 utterance.voice = speechSynthesis.getVoices()[1];
 //records the speech to text data
+var activated = false;
 recognition.onresult = function (event) {
     return __awaiter(this, void 0, void 0, function () {
-        var interimTranscript, finalTranscript, i, speechBox, i_1, response, responseText, responseBox, i_2, error_1;
+        var interimTranscript, finalTranscript, i, responseBox, status_1, status_2, speechBox, i_1, response, responseText, responseBox, i_2, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -59,10 +59,27 @@ recognition.onresult = function (event) {
                     if (!event.results[i].isFinal) return [3 /*break*/, 6];
                     //capture the text from the recording in a final snapshot and display it.
                     finalTranscript += event.results[i][0].transcript;
+                    if (finalTranscript.toLowerCase().includes("hey") && finalTranscript.toLowerCase().includes("jarvis") && !activated) {
+                        recognition.stop();
+                        activated = true;
+                        utterance.text = "Hello, how can I help you?";
+                        speechSynthesis.speak(utterance);
+                        utterance.onend = function () {
+                            recognition.start();
+                        };
+                        responseBox = document.getElementById("responseBox");
+                        responseBox.value = "Hello, how can I help you?";
+                        status_1 = document.getElementById("status");
+                        status_1.innerText = "Listening...";
+                        return [2 /*return*/];
+                    }
+                    if (!activated) return [3 /*break*/, 5];
                     _a.label = 2;
                 case 2:
                     _a.trys.push([2, 4, , 5]);
                     recognition.stop();
+                    status_2 = document.getElementById("status");
+                    status_2.innerText = "Thinking...";
                     speechBox = document.getElementById("speechBox");
                     speechBox.value = "";
                     for (i_1 = 0; i_1 < finalTranscript.length; i_1++) {
@@ -83,6 +100,7 @@ recognition.onresult = function (event) {
                     utterance.text = responseText;
                     speechSynthesis.speak(utterance);
                     utterance.onend = function () {
+                        activated = false;
                         recognition.start();
                     };
                     return [3 /*break*/, 5];
@@ -135,6 +153,7 @@ function requestHandler(info) {
     });
 }
 ;
+//to start to the recording from the browser interface
 function startRecording() {
     recognition.start();
 }
