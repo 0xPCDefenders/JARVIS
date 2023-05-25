@@ -37,6 +37,84 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runInference = void 0;
+var _a = require("@llama-node/core"), LLama = _a.LLama, LLamaInferenceArguments = _a.LLamaInferenceArguments;
+var on = require("events").on;
+var response = require("express").response;
+var resolve = require("path").resolve;
+///
+var exec = require('child_process').exec;
+var http = require('http');
+var fs = require('fs');
+// Open the file in the default browser
+function getCurrentFilePath() {
+    exec("cd", function (error, stdout, stderr) {
+        if (error) {
+            console.error("Error opening file: ".concat(error.message));
+            return;
+        }
+        if (stderr) {
+            console.error("Error opening file: ".concat(stderr));
+            return;
+        }
+        console.log(stdout);
+        openFrontEnd(stdout);
+    });
+}
+function openFrontEnd(filePath) {
+    filePath = removeAfterLastBackslash(filePath);
+    filePath = filePath;
+    //
+    var server = http.createServer(function (req, res) {
+        filePath = filePath.replace(/\\/g, "/");
+        var endingPath = "/app/index.html";
+        fs.readFile(filePath + endingPath, function (err, content) {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/html' });
+                res.end('Error loading HTML file at ' + filePath);
+            }
+            else {
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.end(content);
+            }
+        });
+        endingPath = "/app/client.js";
+        fs.readFile(filePath + endingPath, function (err, content) {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'application/javascript' });
+                res.end('Error loading JavaScript file at ' + filePath);
+            }
+            else {
+                res.writeHead(200, { 'Content-Type': 'application/javascript' });
+                res.end(content);
+            }
+        });
+    });
+    server.listen(8080, function () {
+        console.log('Server is running on http://localhost:8080');
+    });
+    //
+    exec("start \"\" http://localhost:8080", function (error, stdout, stderr) {
+        if (error) {
+            console.error("Error opening file: ".concat(error.message));
+            return;
+        }
+        if (stderr) {
+            console.error("Error opening file: ".concat(stderr));
+            return;
+        }
+        console.log("Successfully opened localhost:8080");
+    });
+}
+function removeAfterLastBackslash(input) {
+    var lastIndex = input.lastIndexOf('\\');
+    if (lastIndex !== -1) {
+        return input.substring(0, lastIndex);
+    }
+    else {
+        return input;
+    }
+}
+getCurrentFilePath();
 // Create an instance of the Express application
 var express = require('express');
 require("dotenv").config();

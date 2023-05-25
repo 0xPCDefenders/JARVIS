@@ -1,6 +1,95 @@
-import { LLama, LLamaInferenceArguments } from "@llama-node/core";
-import { response } from "express";
-import { resolve } from "path";
+
+const { LLama, LLamaInferenceArguments } = require("@llama-node/core");
+const { on } = require("events");
+const { response } = require("express");
+const { resolve } = require("path");
+
+
+///
+const { exec } = require('child_process');
+const http = require('http');
+const fs = require('fs');
+
+// Open the file in the default browser
+
+function getCurrentFilePath() {
+exec(`cd`, (error: { message: any; }, stdout: any, stderr: any) => {
+  if (error) {
+    console.error(`Error opening file: ${error.message}`);
+    return;
+  }
+  if (stderr) {
+    console.error(`Error opening file: ${stderr}`);
+    return;
+  }
+  console.log(stdout);
+  openFrontEnd(stdout);
+});
+}
+
+function openFrontEnd(filePath: string) {
+  filePath = removeAfterLastBackslash(filePath);
+  filePath = filePath;
+
+  //
+
+  const server = http.createServer((req: any, res: { writeHead: (arg0: number, arg1: { 'Content-Type': string; } | undefined) => void; end: (arg0: string) => void; }) => {
+
+    
+    filePath = filePath.replace(/\\/g, "/");
+    let endingPath = "/app/index.html"
+    fs.readFile(filePath + endingPath, (err: any, content: string) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'text/html' });
+        res.end('Error loading HTML file at ' + filePath);
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(content);
+      }
+    });
+    
+    endingPath = "/app/client.js"
+    fs.readFile(filePath + endingPath, (err: any, content: string) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'application/javascript' });
+        res.end('Error loading JavaScript file at ' + filePath);
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/javascript' });
+        res.end(content);
+      }
+    });
+    
+
+  });
+
+  server.listen(8080, () => {
+    console.log('Server is running on http://localhost:8080');
+  });
+  //
+
+  exec(`start "" http://localhost:8080`, (error: { message: any; }, stdout: any, stderr: any) => {
+    if (error) {
+      console.error(`Error opening file: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.error(`Error opening file: ${stderr}`);
+      return;
+    }
+    console.log(`Successfully opened localhost:8080`);
+  });
+  }
+
+function removeAfterLastBackslash(input: string) {
+  const lastIndex = input.lastIndexOf('\\');
+  if (lastIndex !== -1) {
+    return input.substring(0, lastIndex);
+  } else {
+    return input;
+  }
+}
+
+getCurrentFilePath();
 
 // Create an instance of the Express application
 const express = require('express');
@@ -16,9 +105,10 @@ async function moduleLoader() {
     const { LLamaRS } = await import("llama-node/dist/llm/llama-rs.js");
     return new LLM(LLamaRS);
 }
-
 const path = require("path");
 const cors = require('cors');
+
+
 const bodyParser = require('body-parser');
 const app = express();
 app.use(cors());
@@ -26,7 +116,6 @@ app.use(cors());
 // Add body-parser middleware to parse incoming requests
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 // Define an endpoint to handle incoming GET requests
 // @ts-ignore
 app.get('/answer', async (req, res) => {

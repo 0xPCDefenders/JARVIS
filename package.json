@@ -5,6 +5,9 @@
   "main": "client.js",
   "author": "",
   "license": "ISC",
+  "bin": {
+    "JARVIS": "app/server.js"
+  },
   "dependencies": {
     "@llama-node/core": "^0.0.31",
     "@types/dom-speech-recognition": "^0.0.1",
@@ -12,6 +15,7 @@
     "@types/node": "^18.15.11",
     "dotenv": "^16.0.3",
     "llama-node": "^0.0.31",
+    "open": "^9.1.0",
     "openai": "^3.2.1",
     "rate-limiter-flexible": "^2.4.1",
     "text-to-speech-js": "^1.1.10",
